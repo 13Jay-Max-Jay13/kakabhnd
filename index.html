@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#101016" />
+    <title>Lucky Loop — Play for fun</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #101016;
+        --surface: #181820;
+        --surface-raised: #20202a;
+        --line: #2b2b36;
+        --muted: #9292a2;
+        --text: #f5f4fa;
+        --purple: #a78bfa;
+        --purple-bright: #8b5cf6;
+        --green: #67e8a5;
+        --red: #fb7185;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        min-height: 100vh;
+        background:
+          radial-gradient(ellipse at 75% -20%, rgb(139 92 246 / 14%), transparent 46%),
+          var(--bg);
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      button, input { font: inherit; }
+      button { color: inherit; }
+      button:focus-visible, input:focus-visible { outline: 2px solid var(--purple); outline-offset: 3px; }
+
+      .app { max-width: 1440px; min-height: 100vh; margin: auto; }
+      .topbar {
+        height: 76px;
+        padding: 0 42px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid rgb(255 255 255 / 6%);
+      }
+
+      .brand { display: flex; align-items: center; gap: 11px; font-size: 19px; font-weight: 800; letter-spacing: -.6px; }
+      .brand-mark {
+        width: 34px; height: 34px; display: grid; place-items: center;
+        border-radius: 11px; color: white; font-size: 18px;
+        background: linear-gradient(145deg, #c4b5fd, #7c3aed);
+        box-shadow: 0 5px 22px rgb(139 92 246 / 28%);
+      }
+      .brand span:last-child { color: var(--purple); }
+      .top-right { display: flex; align-items: center; gap: 12px; }
+      .demo-pill {
+        padding: 7px 11px; border: 1px solid #3c3651; border-radius: 999px;
+        background: rgb(167 139 250 / 8%); color: #c4b5fd;
+        font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+      }
+      .wallet {
+        display: flex; align-items: center; gap: 10px; padding: 9px 14px;
+        border: 1px solid var(--line); border-radius: 12px; background: var(--surface);
+      }
+      .wallet-icon { font-size: 18px; }
+      .wallet-label { color: var(--muted); font-size: 10px; line-height: 1.1; }
+      .wallet-value { margin-top: 3px; font-size: 15px; font-weight: 750; font-variant-numeric: tabular-nums; }
+
+      .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: calc(100vh - 76px); }
+      aside { padding: 34px 18px 24px 28px; border-right: 1px solid rgb(255 255 255 / 6%); }
+      .nav-label { margin: 0 0 12px 10px; color: #737382; font-size: 10px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+      .game-nav { display: grid; gap: 6px; }
+      .game-link {
+        width: 100%; padding: 12px 13px; display: flex; align-items: center; gap: 12px;
+        border: 1px solid transparent; border-radius: 11px; background: transparent;
+        color: #aaaab8; text-align: left; cursor: pointer; transition: .18s ease;
+      }
+      .game-link:hover { background: #1b1b24; color: var(--text); }
+      .game-link.active { border-color: #3a3150; background: rgb(139 92 246 / 12%); color: #d7c9ff; }
+      .game-icon { width: 22px; text-align: center; font-size: 17px; }
+      .game-name { flex: 1; font-size: 13px; font-weight: 650; }
+      .new-tag { color: var(--green); font-size: 9px; font-weight: 800; }
+      .sidebar-note {
+        margin: 35px 3px 0; padding: 15px; border: 1px solid var(--line);
+        border-radius: 13px; background: linear-gradient(145deg, #1d1b27, #17171e);
+      }
+      .sidebar-note strong { display: block; margin-bottom: 7px; font-size: 12px; }
+      .sidebar-note p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+
+      main { min-width: 0; padding: 42px clamp(22px, 5vw, 72px) 50px; }
+      .welcome { margin-bottom: 27px; display: flex; align-items: end; justify-content: space-between; gap: 18px; }
+      .eyebrow { margin-bottom: 9px; color: var(--purple); font-size: 10px; font-weight: 850; letter-spacing: .15em; text-transform: uppercase; }
+      h1 { margin: 0; font-size: clamp(25px, 3vw, 34px); letter-spacing: -1.2px; }
+      .welcome p { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+      .bonus-card {
+        margin-bottom: 20px; padding: 14px 17px; display: flex; align-items: center;
+        justify-content: space-between; gap: 16px; border: 1px solid #3b3151;
+        border-radius: 13px; background: linear-gradient(100deg, rgb(139 92 246 / 10%), rgb(24 24 32 / 85%));
+      }
+      .bonus-copy strong { display: block; font-size: 12px; }
+      .bonus-copy span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
+      .bonus-form { display: flex; gap: 7px; }
+      .bonus-input { width: 145px; padding: 9px 10px; border: 1px solid #393743; border-radius: 8px; background: #15151c; color: var(--text); font-size: 11px; }
+      .bonus-button { padding: 0 13px; border: 1px solid #59467d; border-radius: 8px; background: #302544; color: #ddd0ff; font-size: 11px; font-weight: 750; cursor: pointer; }
+      .bonus-button:hover { background: #40315e; }
+      .bonus-status { min-width: 90px; color: var(--muted); font-size: 10px; }
+      .bonus-status.success { color: var(--green); }
+      .bonus-status.error { color: #f99aaa; }
+
+      .game-card {
+        overflow: hidden; border: 1px solid #30303b; border-radius: 19px;
+        background: linear-gradient(150deg, rgb(29 28 39 / 98%), rgb(23 23 31 / 98%));
+        box-shadow: 0 24px 80px rgb(0 0 0 / 24%);
+      }
+      .game-heading {
+        padding: 22px 26px; display: flex; align-items: center; justify-content: space-between;
+        border-bottom: 1px solid rgb(255 255 255 / 6%);
+      }
+      .game-heading-left { display: flex; align-items: center; gap: 13px; }
+      .game-heading-icon {
+        width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px;
+        background: rgb(167 139 250 / 12%); font-size: 21px;
+      }
+      .game-heading h2 { margin: 0; font-size: 16px; }
+      .game-heading p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+      .fair-tag { color: #9292a2; font-size: 10px; }
+
+      .play-area {
+        position: relative; isolation: isolate; overflow: hidden;
+        min-height: 286px; padding: 30px 24px; display: grid; place-items: center;
+      }
+      .play-area::before {
+        position: absolute; z-index: -1; inset: 12% 20%; border-radius: 50%;
+        background: radial-gradient(ellipse, rgb(139 92 246 / 12%), transparent 70%);
+        content: ""; opacity: .35; transition: opacity .25s ease, transform .35s ease;
+      }
+      .play-area.is-rolling::before { animation: stage-charge .8s ease-in-out infinite alternate; opacity: 1; }
+      .play-area.won::before { background: radial-gradient(ellipse, rgb(52 211 153 / 18%), transparent 70%); opacity: 1; }
+      .play-area.lost { animation: soft-shake .28s ease-in-out; }
+      .play-content { position: relative; z-index: 1; width: 100%; text-align: center; }
+      @keyframes stage-charge { to { transform: scale(1.3); opacity: .55; } }
+      @keyframes soft-shake {
+        20% { transform: translateX(-4px); }
+        45% { transform: translateX(3px); }
+        70% { transform: translateX(-2px); }
+      }
+      .win-particles { position: absolute; z-index: 2; inset: 0; overflow: hidden; pointer-events: none; }
+      .win-particle {
+        position: absolute; left: var(--x); top: var(--y); color: var(--spark-color);
+        font-size: var(--spark-size); line-height: 1;
+        filter: drop-shadow(0 0 8px currentColor);
+        animation: spark-burst 1s cubic-bezier(.16, .7, .25, 1) var(--spark-delay) both;
+      }
+      @keyframes spark-burst {
+        0% { opacity: 0; transform: translate(0, 0) scale(.2) rotate(0); }
+        18% { opacity: 1; transform: translate(0, 0) scale(1.1) rotate(35deg); }
+        100% { opacity: 0; transform: translate(var(--spark-x), var(--spark-y)) scale(.15) rotate(var(--spark-turn)); }
+      }
+      .play-prompt { margin: 0 0 22px; color: var(--muted); font-size: 12px; }
+      .choice-row { display: flex; justify-content: center; gap: 12px; }
+      .choice-button {
+        min-width: 126px; padding: 15px 20px; border: 1px solid #363542; border-radius: 14px;
+        background: #22212c; color: #d8d6e2; font-size: 14px; font-weight: 750;
+        cursor: pointer; transition: transform .16s ease, border-color .16s ease, background .16s ease;
+      }
+      .choice-button:hover { transform: translateY(-2px); border-color: #8062ca; background: #292536; }
+      .choice-button.selected { border-color: var(--purple); background: rgb(139 92 246 / 17%); color: white; }
+      .opponent-picker { width: min(100%, 360px); margin: 0 auto 17px; display: flex; align-items: center; justify-content: center; gap: 9px; }
+      .opponent-picker label { color: var(--muted); font-size: 11px; }
+      .opponent-select { max-width: 220px; padding: 8px 10px; border: 1px solid #393743; border-radius: 8px; background: #191820; color: var(--text); font-size: 11px; }
+      .opponent-description { min-height: 16px; margin: -9px 0 15px; color: #9292a2; font-size: 10px; }
+      .coin {
+        width: 104px; height: 104px; margin: 0 auto 17px; display: grid; place-items: center;
+        border: 5px solid #f4c95d; border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #ffe9a1, #d79a2b 75%);
+        color: #754d08; font-size: 40px; font-weight: 900; box-shadow: 0 9px 30px rgb(245 190 64 / 20%);
+      }
+      .coin.flipping { animation: coin-tumble .9s cubic-bezier(.18, .75, .24, 1); }
+      @keyframes coin-tumble {
+        0% { transform: translateY(0) rotateY(0) scale(1); }
+        25% { transform: translateY(-32px) rotateY(540deg) scale(1.12); }
+        55% { transform: translateY(-20px) rotateY(1080deg) scale(1.08); }
+        78% { transform: translateY(2px) rotateY(1440deg) scale(.96); }
+        100% { transform: translateY(0) rotateY(1800deg) scale(1); }
+      }
+      .dice-display { margin: 8px 0 16px; color: #ded8ff; font-size: 83px; line-height: 1; filter: drop-shadow(0 8px 18px rgb(139 92 246 / 16%)); }
+      .dice-display.rolling { animation: dice-tumble .95s cubic-bezier(.25, .75, .25, 1); }
+      @keyframes dice-tumble {
+        0% { transform: translateY(0) rotateX(0) rotateY(0) rotateZ(0) scale(1); }
+        18% { transform: translateY(-34px) rotateX(160deg) rotateY(210deg) rotateZ(25deg) scale(1.12); }
+        42% { transform: translateY(-13px) rotateX(390deg) rotateY(520deg) rotateZ(-24deg) scale(1.06); }
+        68% { transform: translateY(-28px) rotateX(620deg) rotateY(760deg) rotateZ(17deg) scale(1.1); }
+        86% { transform: translateY(3px) rotateX(770deg) rotateY(950deg) rotateZ(-8deg) scale(.96); }
+        100% { transform: translateY(0) rotateX(810deg) rotateY(1080deg) rotateZ(0) scale(1); }
+      }
+      .slot-reels { display: flex; justify-content: center; gap: 10px; margin: 6px 0 19px; }
+      .reel {
+        width: 77px; height: 85px; display: grid; place-items: center; border: 1px solid #464052;
+        border-radius: 14px; background: linear-gradient(#302d3b, #211f2a); font-size: 42px;
+        box-shadow: inset 0 2px 9px rgb(0 0 0 / 20%);
+      }
+      .reel.spinning { animation: reel-bounce .16s ease-in-out infinite alternate; filter: blur(1px) brightness(1.25); }
+      @keyframes reel-bounce {
+        from { transform: translateY(-5px) scale(.98); }
+        to { transform: translateY(5px) scale(1.02); }
+      }
+      .roulette-wheel {
+        width: 132px; height: 132px; margin: 0 auto 13px; display: grid; place-items: center;
+        border: 8px solid #3e354e; border-radius: 50%; background: conic-gradient(#b5314c 0 33%, #282831 33% 66%, #4aa77a 66%);
+        box-shadow: 0 0 0 2px #8f75c1, 0 8px 32px rgb(0 0 0 / 30%);
+      }
+      .roulette-number { width: 69px; height: 69px; display: grid; place-items: center; border: 3px solid #d5c6fd; border-radius: 50%; background: #191820; font-size: 28px; font-weight: 850; }
+      .roulette-wheel.spinning { animation: roulette 2.4s cubic-bezier(.12, .72, .14, 1) both; }
+      @keyframes roulette {
+        0% { transform: rotate(0); }
+        28% { transform: rotate(1080deg); }
+        100% { transform: rotate(1800deg); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; }
+        .coin.flipping, .dice-display.rolling, .reel.spinning, .roulette-wheel.spinning,
+        .play-area.is-rolling::before, .play-area.lost, .game-result.win, .win-particle {
+          animation: none !important;
+        }
+        .win-particles { display: none; }
+      }
+      .game-result { min-height: 20px; margin-top: 17px; color: #c8c6d2; font-size: 13px; font-weight: 700; }
+      .game-result.win { color: var(--green); animation: result-pop .35s cubic-bezier(.2, .8, .25, 1.4); }
+      .game-result.loss { color: #f99aaa; }
+      @keyframes result-pop {
+        0% { opacity: 0; transform: translateY(7px) scale(.88); }
+        75% { transform: translateY(-2px) scale(1.04); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+      }
+
+      .controls {
+        padding: 21px 26px 24px; border-top: 1px solid rgb(255 255 255 / 6%);
+        display: flex; align-items: end; justify-content: space-between; gap: 18px;
+      }
+      .bet-group { width: min(100%, 300px); }
+      .bet-label { margin-bottom: 8px; display: flex; justify-content: space-between; color: #aaaab8; font-size: 11px; font-weight: 650; }
+      .bet-label span:last-child { color: #767684; font-weight: 500; }
+      .bet-input-wrap { height: 43px; display: flex; align-items: center; overflow: hidden; border: 1px solid #383743; border-radius: 10px; background: #15151c; }
+      .currency { padding-left: 13px; color: var(--green); font-weight: 800; }
+      input[type="number"] { width: 100%; min-width: 0; padding: 0 12px; border: 0; outline: 0; background: transparent; color: var(--text); font-weight: 700; }
+      input[type="number"]::-webkit-inner-spin-button { appearance: none; }
+      .bet-shortcuts { display: flex; gap: 6px; margin-top: 7px; }
+      .bet-shortcuts button { padding: 5px 9px; border: 1px solid #34333e; border-radius: 7px; background: #20202a; color: #a5a4b2; font-size: 10px; cursor: pointer; }
+      .bet-shortcuts button:hover { border-color: #6f5b9b; color: white; }
+      .play-button {
+        min-width: 180px; height: 46px; padding: 0 22px; border: 0; border-radius: 11px;
+        background: linear-gradient(110deg, #9b72f6, #7544dc); color: white; font-size: 13px;
+        font-weight: 850; box-shadow: 0 8px 24px rgb(124 58 237 / 23%); cursor: pointer; transition: .16s ease;
+      }
+      .play-button:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.1); }
+      .play-button:disabled { opacity: .55; cursor: wait; }
+      .below { margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+      .info-card { padding: 17px 19px; border: 1px solid var(--line); border-radius: 13px; background: rgb(24 24 32 / 78%); }
+      .info-title { margin-bottom: 11px; color: #b6b5c2; font-size: 11px; font-weight: 750; }
+      .history-list { display: flex; align-items: center; gap: 7px; min-height: 25px; }
+      .history-chip { padding: 5px 8px; border-radius: 7px; background: #262630; color: #b7b6c3; font-size: 10px; }
+      .history-chip.win { background: rgb(52 211 153 / 12%); color: #72e6b1; }
+      .history-chip.loss { background: rgb(251 113 133 / 10%); color: #f28a9b; }
+      .empty-history { color: #777785; font-size: 11px; }
+      .payline { display: flex; flex-wrap: wrap; gap: 7px; }
+      .payline span { padding: 5px 8px; border: 1px solid #33323e; border-radius: 7px; color: #aaa9b7; font-size: 10px; }
+      .responsible { margin: 22px 0 0; color: #71717e; font-size: 10px; line-height: 1.6; text-align: center; }
+
+      @media (max-width: 760px) {
+        .topbar { height: 66px; padding: 0 18px; }
+        .layout { display: block; min-height: calc(100vh - 66px); }
+        aside { padding: 14px 18px; border-right: 0; border-bottom: 1px solid rgb(255 255 255 / 6%); }
+        .nav-label, .sidebar-note { display: none; }
+        .game-nav { display: flex; overflow-x: auto; gap: 7px; scrollbar-width: none; }
+        .game-nav::-webkit-scrollbar { display: none; }
+        .game-link { width: auto; flex: 0 0 auto; padding: 9px 11px; gap: 7px; }
+        .game-name { font-size: 11px; }
+        main { padding: 27px 18px 35px; }
+        .welcome { align-items: center; }
+        .game-heading { padding: 17px 18px; }
+        .play-area { min-height: 260px; padding: 25px 16px; }
+        .controls { align-items: stretch; flex-direction: column; padding: 18px; }
+        .bet-group { width: 100%; }
+        .play-button { width: 100%; }
+        .below { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 420px) {
+        .demo-pill { display: none; }
+        .wallet { padding: 8px 10px; }
+        .welcome p { max-width: 220px; line-height: 1.5; }
+        .choice-button { min-width: 0; flex: 1; }
+        .reel { width: 66px; height: 76px; }
+        .fair-tag { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark">✦</span>Lucky <span>Loop</span></div>
+        <div class="top-right">
+          <span class="demo-pill">Free play · no real money</span>
+          <div class="wallet" aria-live="polite">
+            <span class="wallet-icon">🪙</span>
+            <div><div class="wallet-label">PLAY CREDITS</div><div class="wallet-value" id="balance">$1,000</div></div>
+          </div>
+        </div>
+      </header>
+
+      <div class="layout">
+        <aside>
+          <p class="nav-label">Choose a game</p>
+          <nav class="game-nav" id="game-nav" aria-label="Games"></nav>
+          <div class="sidebar-note">
+            <strong>Just for fun ✨</strong>
+            <p>These are pretend credits in a demo. They have no cash value and can’t be purchased or withdrawn.</p>
+          </div>
+        </aside>
+
+        <main>
+          <div class="welcome">
+            <div>
+              <div class="eyebrow">The fun starts here</div>
+              <h1>Pick a game. Try your luck.</h1>
+              <p>Every game uses pretend credits. No deposits, no real-money betting.</p>
+            </div>
+          </div>
+
+          <section class="bonus-card" aria-label="Redeem bonus code">
+            <div class="bonus-copy"><strong>Got a bonus code? ✨</strong><span>Redeem a code for extra play credits.</span></div>
+            <form class="bonus-form" id="bonus-form">
+              <input class="bonus-input" id="bonus-input" type="text" placeholder="Enter code" aria-label="Bonus code" autocomplete="off" />
+              <button class="bonus-button" type="submit">Redeem</button>
+            </form>
+            <span class="bonus-status" id="bonus-status" aria-live="polite"></span>
+          </section>
+
+          <section class="game-card" aria-label="Game">
+            <div class="game-heading">
+              <div class="game-heading-left">
+                <div class="game-heading-icon" id="heading-icon">🪙</div>
+                <div><h2 id="heading-title">Coin Flip</h2><p id="heading-subtitle">A simple call: heads or tails?</p></div>
+              </div>
+              <span class="fair-tag">✦ Play credits only</span>
+            </div>
+            <div class="play-area" id="play-area"></div>
+            <div class="controls">
+              <div class="bet-group">
+                <label class="bet-label" for="bet-input"><span>Your bet</span><span id="bet-hint">Max $1,000</span></label>
+                <div class="bet-input-wrap"><span class="currency">$</span><input id="bet-input" type="number" min="1" step="1" value="25" inputmode="numeric" /></div>
+                <div class="bet-shortcuts" aria-label="Bet shortcuts">
+                  <button type="button" data-bet="10">+$10</button>
+                  <button type="button" data-bet="25">+$25</button>
+                  <button type="button" data-bet="50">+$50</button>
+                  <button type="button" id="half-bet">½</button>
+                  <button type="button" id="max-bet">MAX</button>
+                </div>
+              </div>
+              <button type="button" class="play-button" id="play-button">Flip coin · 1.95×</button>
+            </div>
+          </section>
+
+          <div class="below">
+            <section class="info-card">
+              <div class="info-title">RECENT PLAYS</div>
+              <div class="history-list" id="history-list"><span class="empty-history">Your results will show up here.</span></div>
+            </section>
+            <section class="info-card">
+              <div class="info-title">PAYOUTS · TOTAL RETURN</div>
+              <div class="payline" id="payline"></div>
+            </section>
+          </div>
+          <p class="responsible">Lucky Loop is a casual demo. Credits are fictional and have no monetary value.</p>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const games = {
+          coin: { name: "Coin Flip", icon: "🪙", subtitle: "A simple call: heads or tails?", multiplier: "1.95×" },
+          dice: { name: "Dice Roll", icon: "🎲", subtitle: "Pick a side and roll the dice.", multiplier: "1.95×" },
+          slots: { name: "Lucky Slots", icon: "🎰", subtitle: "Line up symbols for a lucky payout.", multiplier: "Up to 10×" },
+          roulette: { name: "Roulette", icon: "🔴", subtitle: "Pick a color. Where will it land?", multiplier: "Up to 36×" },
+        };
+        const opponents = [
+          { id: "nova", name: "Nova", description: "Cool-headed and curious" },
+          { id: "pixel", name: "Pixel", description: "Playful and unpredictable" },
+          { id: "ace", name: "Ace", description: "Confident old-school rival" },
+          { id: "oracle", name: "Oracle", description: "Mysterious coin-flip fan" },
+        ];
+        const symbols = ["🍒", "🍋", "🍇", "🔔", "⭐"];
+        const colors = ["red", "black", "green"];
+        const state = { balance: 1000, game: "coin", choice: "heads", opponent: "nova", busy: false, history: [], feedbackTimer: null };
+        const bonusCode = "425#G5Lb";
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const $ = (selector) => document.querySelector(selector);
+        const balanceEl = $("#balance");
+        const input = $("#bet-input");
+        const playButton = $("#play-button");
+        const playArea = $("#play-area");
+        const resultEl = () => $("#game-result");
+
+        function money(amount) {
+          return "$" + Math.floor(amount).toLocaleString("en-US");
+        }
+
+        function updateBalance() {
+          balanceEl.textContent = money(state.balance);
+          $("#bet-hint").textContent = `Max ${money(state.balance)}`;
+        }
+
+        function renderNav() {
+          $("#game-nav").innerHTML = Object.entries(games).map(([id, game]) =>
+            `<button type="button" class="game-link${id === state.game ? " active" : ""}" data-game="${id}" aria-pressed="${id === state.game}"><span class="game-icon">${game.icon}</span><span class="game-name">${game.name}</span></button>`
+          ).join("");
+        }
+
+        function areaMarkup() {
+          if (state.game === "coin") {
+            const opponent = opponents.find((item) => item.id === state.opponent);
+            return `<div class="play-content"><div class="coin" id="coin-display" aria-hidden="true">✦</div><div class="opponent-picker"><label for="opponent-select">AI opponent</label><select class="opponent-select" id="opponent-select">${opponents.map((item) => `<option value="${item.id}"${item.id === state.opponent ? " selected" : ""}>${item.name}</option>`).join("")}</select></div><p class="opponent-description">${opponent.description}</p><p class="play-prompt">Call the toss. Matching calls tie and return your bet.</p><div class="choice-row"><button type="button" class="choice-button${state.choice === "heads" ? " selected" : ""}" data-choice="heads">👑 &nbsp; Heads</button><button type="button" class="choice-button${state.choice === "tails" ? " selected" : ""}" data-choice="tails">✦ &nbsp; Tails</button></div><div class="game-result" id="game-result" aria-live="polite"></div></div>`;
+          }
+          if (state.game === "dice") {
+            return `<div class="play-content"><p class="play-prompt">Choose your side · win on 1–50 or 51–100</p><div class="choice-row"><button type="button" class="choice-button${state.choice === "low" ? " selected" : ""}" data-choice="low">⬇ &nbsp; Low (1–50)</button><button type="button" class="choice-button${state.choice === "high" ? " selected" : ""}" data-choice="high">⬆ &nbsp; High (51–100)</button></div><div class="dice-display" id="dice-display" aria-hidden="true">🎲</div><div class="game-result" id="game-result" aria-live="polite"></div></div>`;
+          }
+          if (state.game === "slots") {
+            return `<div class="play-content"><p class="play-prompt">Three matching symbols pay big. Any pair gets a little something.</p><div class="slot-reels" aria-label="Slot reels">${[0, 1, 2].map((i) => `<div class="reel" id="reel-${i}">✦</div>`).join("")}</div><div class="game-result" id="game-result" aria-live="polite"></div></div>`;
+          }
+          return `<div class="play-content"><p class="play-prompt">Choose a color · green is the single zero</p><div class="roulette-wheel" id="roulette-wheel"><div class="roulette-number" id="roulette-number">?</div></div><div class="choice-row">${colors.map((color) => `<button type="button" class="choice-button${state.choice === color ? " selected" : ""}" data-choice="${color}">${color === "red" ? "🔴" : color === "black" ? "⚫" : "🟢"} &nbsp; ${color[0].toUpperCase() + color.slice(1)}</button>`).join("")}</div><div class="game-result" id="game-result" aria-live="polite"></div></div>`;
+        }
+
+        function renderGame() {
+          const game = games[state.game];
+          $("#heading-icon").textContent = game.icon;
+          $("#heading-title").textContent = game.name;
+          $("#heading-subtitle").textContent = game.subtitle;
+          playArea.innerHTML = areaMarkup();
+          playButton.textContent = state.game === "slots" ? "Spin slots" : state.game === "roulette" ? "Spin roulette" : state.game === "dice" ? "Roll dice · 1.95×" : "Flip coin · 1.95×";
+          $("#payline").innerHTML = (state.game === "slots"
+            ? ["🍒 🍋 🍇 · pair 1.5×", "3 alike · 4×", "3 stars · 10×"]
+            : state.game === "roulette"
+              ? ["Red / black · 2×", "Green · 36×"]
+              : ["Correct call · 1.95×"]
+          ).map((item) => `<span>${item}</span>`).join("");
+          renderNav();
+        }
+
+        function setResult(message, outcome) {
+          const el = resultEl();
+          if (!el) return;
+          el.textContent = message;
+          el.className = `game-result${outcome ? " " + outcome : ""}`;
+        }
+
+        function addHistory(message, outcome) {
+          state.history.unshift({ message, outcome });
+          state.history = state.history.slice(0, 5);
+          $("#history-list").innerHTML = state.history.map((item) =>
+            `<span class="history-chip ${item.outcome}">${item.message}</span>`
+          ).join("");
+        }
+
+        function getBet() {
+          const amount = Number(input.value);
+          if (!Number.isSafeInteger(amount) || amount < 1) {
+            setResult("Enter a whole-number bet of at least $1.", "loss");
+            return null;
+          }
+          if (amount > state.balance) {
+            setResult("That bet is more than your available credits.", "loss");
+            return null;
+          }
+          return amount;
+        }
+
+        function play() {
+          if (state.busy) return;
+          const bet = getBet();
+          if (bet === null) return;
+          state.busy = true;
+          playButton.disabled = true;
+          window.clearTimeout(state.feedbackTimer);
+          playArea.classList.remove("won", "lost");
+          playArea.classList.add("is-rolling");
+          playArea.querySelectorAll(".win-particles").forEach((particles) => particles.remove());
+          state.balance -= bet;
+          updateBalance();
+          setResult("Good luck…", "");
+          const finish = (won, multiplier, message, pushed = false) => {
+            if (pushed) state.balance += bet;
+            else if (won) state.balance += Math.floor(bet * multiplier);
+            updateBalance();
+            setResult(`${message}${pushed ? ` · ${money(bet)} bet returned` : won ? ` · +${money(bet * multiplier)} returned` : ` · −${money(bet)} bet`}`, pushed ? "" : won ? "win" : "loss");
+            addHistory(`${games[state.game].icon} ${pushed ? "Tie" : won ? "+" + money(bet * (multiplier - 1)) : "−" + money(bet)}`, pushed ? "" : won ? "win" : "loss");
+            playArea.classList.remove("is-rolling", "won", "lost");
+            playArea.classList.add(won ? "won" : "lost");
+            if (won) showWinBurst();
+            window.clearTimeout(state.feedbackTimer);
+            state.feedbackTimer = window.setTimeout(() => playArea.classList.remove("won", "lost"), 1100);
+            state.busy = false;
+            playButton.disabled = false;
+          };
+
+          if (state.game === "coin") {
+            $("#coin-display").classList.add("flipping");
+            window.setTimeout(() => {
+              const landed = Math.random() < 0.5 ? "heads" : "tails";
+              const opponent = opponents.find((item) => item.id === state.opponent);
+              const opponentChoice = Math.random() < 0.5 ? "heads" : "tails";
+              $("#coin-display").textContent = landed === "heads" ? "👑" : "✦";
+              const opponentCall = `${opponent.name} called ${opponentChoice}`;
+              if (opponentChoice === state.choice) {
+                finish(false, 0, `It’s ${landed}. You and ${opponent.name} both called ${state.choice}. Tie!`, true);
+              } else {
+                finish(landed === state.choice, 1.95, `It’s ${landed}. You called ${state.choice}; ${opponentCall}.`);
+              }
+            }, prefersReducedMotion ? 0 : 900);
+          } else if (state.game === "dice") {
+            const die = $("#dice-display");
+            die.classList.add("rolling");
+            window.setTimeout(() => {
+              const roll = Math.floor(Math.random() * 100) + 1;
+              die.classList.remove("rolling");
+              die.textContent = roll % 6 === 0 ? "🎲" : ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"][roll % 6];
+              finish(state.choice === "low" ? roll <= 50 : roll > 50, 1.95, `Rolled ${roll}.`);
+            }, prefersReducedMotion ? 0 : 950);
+          } else if (state.game === "slots") {
+            const reels = [0, 1, 2].map((i) => $(`#reel-${i}`));
+            const rolls = [0, 1, 2].map(() => symbols[Math.floor(Math.random() * symbols.length)]);
+            let stopped = 0;
+            const stopDelays = prefersReducedMotion ? [0, 0, 0] : [720, 980, 1240];
+            reels.forEach((reel, i) => {
+              reel.classList.add("spinning");
+              const interval = prefersReducedMotion ? null : window.setInterval(() => {
+                reel.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+              }, 75);
+              window.setTimeout(() => {
+                if (interval !== null) window.clearInterval(interval);
+                reel.classList.remove("spinning");
+                reel.textContent = rolls[i];
+                stopped++;
+                if (stopped === reels.length) {
+                  const counts = rolls.reduce((all, symbol) => ({ ...all, [symbol]: (all[symbol] || 0) + 1 }), {});
+                  const highest = Math.max(...Object.values(counts));
+                  const multiplier = highest === 3 ? (rolls[0] === "⭐" ? 10 : 4) : highest === 2 ? 1.5 : 0;
+                  finish(multiplier > 0, multiplier, multiplier ? `${rolls.join(" ")} — ${highest === 3 ? "Three alike!" : "Pair!"}` : `${rolls.join(" ")} — No match.`);
+                }
+              }, stopDelays[i]);
+            });
+          } else {
+            $("#roulette-wheel").classList.add("spinning");
+            window.setTimeout(() => {
+              const number = Math.floor(Math.random() * 37);
+              const landed = number === 0 ? "green" : number % 2 === 0 ? "black" : "red";
+              $("#roulette-number").textContent = number;
+              const won = landed === state.choice;
+              finish(won, landed === "green" ? 36 : 2, ` ${number} · ${landed[0].toUpperCase() + landed.slice(1)}.`);
+            }, prefersReducedMotion ? 0 : 2400);
+          }
+        }
+
+        function showWinBurst() {
+          playArea.querySelectorAll(".win-particles").forEach((particles) => particles.remove());
+          const particles = document.createElement("div");
+          particles.className = "win-particles";
+          particles.setAttribute("aria-hidden", "true");
+          const shapes = ["✦", "✧", "●", "✦"];
+          const colors = ["#a78bfa", "#67e8a5", "#f7d774", "#ff8ba7"];
+          for (let i = 0; i < 18; i++) {
+            const particle = document.createElement("span");
+            particle.className = "win-particle";
+            particle.textContent = shapes[i % shapes.length];
+            particle.style.setProperty("--x", `${35 + Math.random() * 30}%`);
+            particle.style.setProperty("--y", `${35 + Math.random() * 35}%`);
+            particle.style.setProperty("--spark-x", `${(Math.random() - .5) * 260}px`);
+            particle.style.setProperty("--spark-y", `${(Math.random() - .5) * 180}px`);
+            particle.style.setProperty("--spark-turn", `${Math.random() * 300 - 150}deg`);
+            particle.style.setProperty("--spark-color", colors[i % colors.length]);
+            particle.style.setProperty("--spark-size", `${8 + Math.random() * 12}px`);
+            particle.style.setProperty("--spark-delay", `${Math.random() * .16}s`);
+            particles.appendChild(particle);
+          }
+          playArea.appendChild(particles);
+          window.setTimeout(() => particles.remove(), 1300);
+        }
+
+        $("#game-nav").addEventListener("click", (event) => {
+          const button = event.target.closest("[data-game]");
+          if (!button || state.busy) return;
+          state.game = button.dataset.game;
+          state.choice = state.game === "coin" ? "heads" : state.game === "dice" ? "low" : state.game === "roulette" ? "red" : "";
+          renderGame();
+        });
+        playArea.addEventListener("click", (event) => {
+          const button = event.target.closest("[data-choice]");
+          if (!button || state.busy) return;
+          state.choice = button.dataset.choice;
+          playArea.innerHTML = areaMarkup();
+        });
+        playArea.addEventListener("change", (event) => {
+          if (event.target.id !== "opponent-select" || state.busy) return;
+          state.opponent = event.target.value;
+          const description = opponents.find((item) => item.id === state.opponent).description;
+          playArea.querySelector(".opponent-description").textContent = description;
+        });
+        playButton.addEventListener("click", play);
+        input.addEventListener("input", () => {
+          if (resultEl()?.classList.contains("loss")) setResult("", "");
+        });
+        document.querySelectorAll("[data-bet]").forEach((button) => {
+          button.addEventListener("click", () => {
+            input.value = Math.min(state.balance, Math.max(1, Number(input.value) || 0) + Number(button.dataset.bet));
+          });
+        });
+        $("#half-bet").addEventListener("click", () => { input.value = Math.max(1, Math.floor((Number(input.value) || 1) / 2)); });
+        $("#max-bet").addEventListener("click", () => { input.value = state.balance; });
+        $("#bonus-form").addEventListener("submit", (event) => {
+          event.preventDefault();
+          const status = $("#bonus-status");
+          const code = $("#bonus-input").value.trim();
+          if (code !== bonusCode) {
+            status.textContent = "That code didn’t work.";
+            status.className = "bonus-status error";
+          } else {
+            state.balance += 1000;
+            updateBalance();
+            status.textContent = "+1,000 credits added!";
+            status.className = "bonus-status success";
+            $("#bonus-input").value = "";
+          }
+        });
+        updateBalance();
+        renderGame();
+      })();
+    </script>
+  </body>
+</html>
