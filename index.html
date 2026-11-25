@@ -109,6 +109,8 @@
       .bonus-status { min-width: 90px; color: var(--muted); font-size: 10px; }
       .bonus-status.success { color: var(--green); }
       .bonus-status.error { color: #f99aaa; }
+      .game-over-banner { margin: 0 0 20px; padding: 15px 18px; border: 1px solid #713a4a; border-radius: 12px; background: rgb(251 113 133 / 10%); color: #ff9aab; font-size: 14px; font-weight: 800; text-align: center; }
+      .game-over-banner[hidden] { display: none; }
 
       .game-card {
         overflow: hidden; border: 1px solid #30303b; border-radius: 19px;
@@ -172,6 +174,19 @@
       .opponent-picker label { color: var(--muted); font-size: 11px; }
       .opponent-select { max-width: 220px; padding: 8px 10px; border: 1px solid #393743; border-radius: 8px; background: #191820; color: var(--text); font-size: 11px; }
       .opponent-description { min-height: 16px; margin: -9px 0 15px; color: #9292a2; font-size: 10px; }
+      .blackjack-table { display: grid; justify-items: center; gap: 20px; }
+      .blackjack-hand { width: 100%; }
+      .blackjack-hand-label { margin-bottom: 8px; color: #aaaab8; font-size: 11px; font-weight: 700; }
+      .blackjack-cards { min-height: 83px; display: flex; justify-content: center; align-items: center; gap: 7px; }
+      .playing-card {
+        width: 54px; height: 77px; display: grid; place-items: center; border: 1px solid #d5d3df;
+        border-radius: 8px; background: #f5f4fa; color: #181820; font-size: 22px; font-weight: 800;
+        box-shadow: 0 5px 14px rgb(0 0 0 / 22%);
+      }
+      .playing-card.red-suit { color: #d33f5b; }
+      .playing-card.face-down { border-color: #9c83d6; background: repeating-linear-gradient(45deg, #34264b 0 6px, #4a3568 6px 12px); color: #e7dcff; }
+      .blackjack-total { margin-top: 7px; color: #ded8ff; font-size: 11px; }
+      .blackjack-actions { display: flex; justify-content: center; gap: 12px; }
       .coin {
         width: 104px; height: 104px; margin: 0 auto 17px; display: grid; place-items: center;
         border: 5px solid #f4c95d; border-radius: 50%;
@@ -208,23 +223,61 @@
         to { transform: translateY(5px) scale(1.02); }
       }
       .roulette-wheel {
-        width: 132px; height: 132px; margin: 0 auto 13px; display: grid; place-items: center;
-        border: 8px solid #3e354e; border-radius: 50%; background: conic-gradient(#b5314c 0 33%, #282831 33% 66%, #4aa77a 66%);
-        box-shadow: 0 0 0 2px #8f75c1, 0 8px 32px rgb(0 0 0 / 30%);
+        position: relative; width: 154px; height: 154px; margin: 0 auto 13px;
+        border: 7px solid #594d3b; border-radius: 50%;
+        background: radial-gradient(circle, #c0a66d 0 4%, #51432d 5% 8%, #a88b53 9% 12%, #30291f 13% 100%);
+        box-shadow: 0 0 0 2px #8f75c1, 0 8px 32px rgb(0 0 0 / 30%), inset 0 0 0 2px #ad986c;
       }
-      .roulette-number { width: 69px; height: 69px; display: grid; place-items: center; border: 3px solid #d5c6fd; border-radius: 50%; background: #191820; font-size: 28px; font-weight: 850; }
-      .roulette-wheel.spinning { animation: roulette 2.4s cubic-bezier(.12, .72, .14, 1) both; }
+      .roulette-disc {
+        position: absolute; inset: 12px; display: grid; place-items: center;
+        border: 4px solid #bca568; border-radius: 50%;
+        background:
+          repeating-conic-gradient(from -4.86486deg, #d0b779 0deg 1deg, transparent 1deg 9.72973deg),
+          var(--pocket-background);
+        box-shadow: inset 0 0 0 2px rgb(255 255 255 / 13%), 0 0 0 2px #342b1e;
+      }
+      .roulette-pocket {
+        position: absolute; top: 50%; left: 50%; width: 12px; height: 10px;
+        margin: -5px 0 0 -6px; display: grid; place-items: center;
+        color: white; font-size: 6px; font-weight: 850; line-height: 1;
+        text-shadow: 0 1px 2px #000;
+        transform: rotate(var(--pocket-angle)) translateY(-53px) rotate(var(--pocket-counter-angle));
+      }
+      .roulette-number { width: 57px; height: 57px; display: grid; place-items: center; border: 3px solid #d5c6fd; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #34323c, #191820 70%); font-size: 26px; font-weight: 850; box-shadow: 0 2px 8px #0009; }
+      .roulette-ball-orbit { position: absolute; inset: 50%; }
+      .roulette-ball {
+        position: absolute; top: -55px; left: 50%; width: 11px; height: 11px;
+        border: 1px solid #d7d7d7; border-radius: 50%;
+        background: radial-gradient(circle at 33% 28%, #fff 0 18%, #eee 34%, #999 100%);
+        box-shadow: 0 0 7px 2px rgb(255 255 255 / 50%), 0 1px 3px #000;
+        transform: translate(-50%, -50%);
+      }
+      .roulette-wheel.spinning .roulette-disc { animation: roulette 2.4s cubic-bezier(.12, .72, .14, 1) both; }
+      .roulette-wheel.spinning .roulette-ball-orbit { animation: roulette-ball-orbit 2.4s cubic-bezier(.12, .72, .14, 1) both; }
+      .roulette-wheel.spinning .roulette-ball { animation: roulette-ball-drop 2.4s cubic-bezier(.12, .72, .14, 1) both; }
       @keyframes roulette {
         0% { transform: rotate(0); }
         28% { transform: rotate(1080deg); }
-        100% { transform: rotate(1800deg); }
+        100% { transform: rotate(var(--wheel-end-angle, 1800deg)); }
+      }
+      @keyframes roulette-ball-orbit {
+        0% { transform: rotate(0); }
+        28% { transform: rotate(-1440deg); }
+        100% { transform: rotate(-2520deg); }
+      }
+      @keyframes roulette-ball-drop {
+        0%, 28% { top: -55px; }
+        100% { top: -43px; }
       }
       @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after { scroll-behavior: auto !important; }
-        .coin.flipping, .dice-display.rolling, .reel.spinning, .roulette-wheel.spinning,
+        .coin.flipping, .dice-display.rolling, .reel.spinning, .roulette-wheel.spinning .roulette-disc,
+        .roulette-wheel.spinning .roulette-ball-orbit, .roulette-wheel.spinning .roulette-ball,
         .play-area.is-rolling::before, .play-area.lost, .game-result.win, .win-particle {
           animation: none !important;
         }
+        .roulette-wheel.spinning .roulette-disc { transform: rotate(var(--wheel-end-angle, 0deg)); }
+        .roulette-wheel.spinning .roulette-ball { top: -43px; }
         .win-particles { display: none; }
       }
       .game-result { min-height: 20px; margin-top: 17px; color: #c8c6d2; font-size: 13px; font-weight: 700; }
@@ -328,6 +381,7 @@
               <p>Every game uses pretend credits. No deposits, no real-money betting.</p>
             </div>
           </div>
+          <div class="game-over-banner" id="game-over-banner" role="status" hidden>Game over — you’ve run out of credits.</div>
 
           <section class="bonus-card" aria-label="Redeem bonus code">
             <div class="bonus-copy"><strong>Got a bonus code? ✨</strong><span>Redeem a code for extra play credits.</span></div>
@@ -385,6 +439,7 @@
           dice: { name: "Dice Roll", icon: "🎲", subtitle: "Pick a side and roll the dice.", multiplier: "1.95×" },
           slots: { name: "Lucky Slots", icon: "🎰", subtitle: "Line up symbols for a lucky payout.", multiplier: "Up to 10×" },
           roulette: { name: "Roulette", icon: "🔴", subtitle: "Pick a color. Where will it land?", multiplier: "Up to 36×" },
+          blackjack: { name: "Blackjack", icon: "🃏", subtitle: "Beat the dealer without going over 21.", multiplier: "Up to 2.5×" },
         };
         const opponents = [
           { id: "nova", name: "Nova", description: "Cool-headed and curious" },
@@ -394,7 +449,15 @@
         ];
         const symbols = ["🍒", "🍋", "🍇", "🔔", "⭐"];
         const colors = ["red", "black", "green"];
-        const state = { balance: 1000, game: "coin", choice: "heads", opponent: "nova", busy: false, history: [], feedbackTimer: null };
+        const roulettePockets = [
+          [0, "green"], [32, "red"], [15, "black"], [19, "red"], [4, "black"], [21, "red"], [2, "black"],
+          [25, "red"], [17, "black"], [34, "red"], [6, "black"], [27, "red"], [13, "black"], [36, "red"],
+          [11, "black"], [30, "red"], [8, "black"], [23, "red"], [10, "black"], [5, "red"], [24, "black"],
+          [16, "red"], [33, "black"], [1, "red"], [20, "black"], [14, "red"], [31, "black"], [9, "red"],
+          [22, "black"], [18, "red"], [29, "black"], [7, "red"], [28, "black"], [12, "red"], [35, "black"],
+          [3, "red"], [26, "black"],
+        ];
+        const state = { balance: 1000, game: "coin", choice: "heads", opponent: "nova", blackjack: null, busy: false, gameOver: false, history: [], feedbackTimer: null };
         const bonusCode = "425#G5Lb";
         const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const $ = (selector) => document.querySelector(selector);
@@ -415,8 +478,47 @@
 
         function renderNav() {
           $("#game-nav").innerHTML = Object.entries(games).map(([id, game]) =>
-            `<button type="button" class="game-link${id === state.game ? " active" : ""}" data-game="${id}" aria-pressed="${id === state.game}"><span class="game-icon">${game.icon}</span><span class="game-name">${game.name}</span></button>`
+            `<button type="button" class="game-link${id === state.game ? " active" : ""}" data-game="${id}" aria-pressed="${id === state.game}"${state.gameOver ? " disabled" : ""}><span class="game-icon">${game.icon}</span><span class="game-name">${game.name}</span></button>`
           ).join("");
+        }
+
+        function handValue(hand) {
+          let total = 0;
+          let aces = 0;
+          for (const card of hand) {
+            if (card.rank === "A") {
+              total += 11;
+              aces++;
+            } else {
+              total += ["J", "Q", "K"].includes(card.rank) ? 10 : Number(card.rank);
+            }
+          }
+          while (total > 21 && aces > 0) {
+            total -= 10;
+            aces--;
+          }
+          return total;
+        }
+
+        function createDeck() {
+          const deck = ["♠", "♥", "♦", "♣"].flatMap((suit) =>
+            ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"].map((rank) => ({ rank, suit }))
+          );
+          for (let i = deck.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [deck[i], deck[j]] = [deck[j], deck[i]];
+          }
+          return deck;
+        }
+
+        function blackjackHandMarkup(hand, hiddenHoleCard = false) {
+          const cards = hand.map((card, index) => {
+            if (hiddenHoleCard && index === 1) return '<span class="playing-card face-down" aria-label="Hidden card">?</span>';
+            const suitColor = card.suit === "♥" || card.suit === "♦" ? " red-suit" : "";
+            return `<span class="playing-card${suitColor}" aria-label="${card.rank} ${card.suit}">${card.rank}${card.suit}</span>`;
+          }).join("");
+          const total = hiddenHoleCard ? "" : `<div class="blackjack-total">Total: ${handValue(hand)}</div>`;
+          return `<div class="blackjack-cards">${cards}</div>${total}`;
         }
 
         function areaMarkup() {
@@ -430,7 +532,28 @@
           if (state.game === "slots") {
             return `<div class="play-content"><p class="play-prompt">Three matching symbols pay big. Any pair gets a little something.</p><div class="slot-reels" aria-label="Slot reels">${[0, 1, 2].map((i) => `<div class="reel" id="reel-${i}">✦</div>`).join("")}</div><div class="game-result" id="game-result" aria-live="polite"></div></div>`;
           }
-          return `<div class="play-content"><p class="play-prompt">Choose a color · green is the single zero</p><div class="roulette-wheel" id="roulette-wheel"><div class="roulette-number" id="roulette-number">?</div></div><div class="choice-row">${colors.map((color) => `<button type="button" class="choice-button${state.choice === color ? " selected" : ""}" data-choice="${color}">${color === "red" ? "🔴" : color === "black" ? "⚫" : "🟢"} &nbsp; ${color[0].toUpperCase() + color.slice(1)}</button>`).join("")}</div><div class="game-result" id="game-result" aria-live="polite"></div></div>`;
+          if (state.game === "blackjack") {
+            if (!state.blackjack) {
+              return `<div class="play-content"><div class="blackjack-table"><p class="play-prompt">Dealer stands on 17. Blackjack pays 3:2; regular wins pay 1:1.</p><p class="play-prompt">Press Deal to start your hand.</p></div><div class="game-result" id="game-result" aria-live="polite"></div></div>`;
+            }
+            const hand = state.blackjack;
+            const dealerHidden = hand.phase === "player";
+            const actions = hand.phase === "player"
+              ? '<div class="blackjack-actions"><button type="button" class="choice-button" data-blackjack-action="hit">Hit</button><button type="button" class="choice-button" data-blackjack-action="stand">Stand</button></div>'
+              : "";
+            return `<div class="play-content"><div class="blackjack-table"><section class="blackjack-hand"><div class="blackjack-hand-label">Dealer${dealerHidden ? " · hole card hidden" : ""}</div>${blackjackHandMarkup(hand.dealer, dealerHidden)}</section><section class="blackjack-hand"><div class="blackjack-hand-label">Your hand</div>${blackjackHandMarkup(hand.player)}</section>${actions}</div><div class="game-result" id="game-result" aria-live="polite"></div></div>`;
+          }
+          const pocketSize = 360 / roulettePockets.length;
+          const pocketBackground = `conic-gradient(from ${-pocketSize / 2}deg, ${roulettePockets.map(([, color], index) => {
+            const start = (index * pocketSize).toFixed(5);
+            const end = ((index + 1) * pocketSize).toFixed(5);
+            return `${color === "red" ? "#b5314c" : color === "black" ? "#282831" : "#4aa77a"} ${start}deg ${end}deg`;
+          }).join(", ")})`;
+          const pocketLabels = roulettePockets.map(([number], index) => {
+            const angle = (index * pocketSize).toFixed(5);
+            return `<span class="roulette-pocket" style="--pocket-angle:${angle}deg;--pocket-counter-angle:-${angle}deg">${number}</span>`;
+          }).join("");
+          return `<div class="play-content"><p class="play-prompt">Choose a color · green is the single zero</p><div class="roulette-wheel" id="roulette-wheel" aria-label="Roulette wheel"><div class="roulette-disc" style="--pocket-background:${pocketBackground}">${pocketLabels}<div class="roulette-number" id="roulette-number">?</div></div><div class="roulette-ball-orbit" aria-hidden="true"><span class="roulette-ball"></span></div></div><div class="choice-row">${colors.map((color) => `<button type="button" class="choice-button${state.choice === color ? " selected" : ""}" data-choice="${color}">${color === "red" ? "🔴" : color === "black" ? "⚫" : "🟢"} &nbsp; ${color[0].toUpperCase() + color.slice(1)}</button>`).join("")}</div><div class="game-result" id="game-result" aria-live="polite"></div></div>`;
         }
 
         function renderGame() {
@@ -439,11 +562,13 @@
           $("#heading-title").textContent = game.name;
           $("#heading-subtitle").textContent = game.subtitle;
           playArea.innerHTML = areaMarkup();
-          playButton.textContent = state.game === "slots" ? "Spin slots" : state.game === "roulette" ? "Spin roulette" : state.game === "dice" ? "Roll dice · 1.95×" : "Flip coin · 1.95×";
+          playButton.textContent = state.game === "blackjack" ? "Deal · Blackjack pays 3:2" : state.game === "slots" ? "Spin slots" : state.game === "roulette" ? "Spin roulette" : state.game === "dice" ? "Roll dice · 1.95×" : "Flip coin · 1.95×";
           $("#payline").innerHTML = (state.game === "slots"
             ? ["🍒 🍋 🍇 · pair 1.5×", "3 alike · 4×", "3 stars · 10×"]
             : state.game === "roulette"
               ? ["Red / black · 2×", "Green · 36×"]
+              : state.game === "blackjack"
+                ? ["Win · 2× total return", "Blackjack · 2.5× total return", "Push · bet returned"]
               : ["Correct call · 1.95×"]
           ).map((item) => `<span>${item}</span>`).join("");
           renderNav();
@@ -465,6 +590,10 @@
         }
 
         function getBet() {
+          if (state.gameOver) {
+            setResult("Game over — no credits remain.", "loss");
+            return null;
+          }
           const amount = Number(input.value);
           if (!Number.isSafeInteger(amount) || amount < 1) {
             setResult("Enter a whole-number bet of at least $1.", "loss");
@@ -477,8 +606,83 @@
           return amount;
         }
 
+        function finishRound(bet, won, multiplier, message, pushed = false) {
+          if (pushed) state.balance += bet;
+          else if (won) state.balance += Math.floor(bet * multiplier);
+          updateBalance();
+          setResult(`${message}${pushed ? ` · ${money(bet)} bet returned` : won ? ` · +${money(bet * multiplier)} returned` : ` · −${money(bet)} bet`}`, pushed ? "" : won ? "win" : "loss");
+          addHistory(`${games[state.game].icon} ${pushed ? "Tie" : won ? "+" + money(bet * (multiplier - 1)) : "−" + money(bet)}`, pushed ? "" : won ? "win" : "loss");
+          playArea.classList.remove("is-rolling", "won", "lost");
+          if (won) playArea.classList.add("won");
+          else if (!pushed) playArea.classList.add("lost");
+          if (won) showWinBurst();
+          if (state.game === "blackjack" && state.blackjack) state.blackjack.phase = "finished";
+          window.clearTimeout(state.feedbackTimer);
+          state.feedbackTimer = window.setTimeout(() => playArea.classList.remove("won", "lost"), 1100);
+          state.busy = false;
+          playButton.disabled = false;
+          if (state.balance <= 0) enterGameOver();
+        }
+
+        function enterGameOver() {
+          if (state.gameOver) return;
+          state.gameOver = true;
+          $("#game-over-banner").hidden = false;
+          input.disabled = true;
+          document.querySelectorAll("[data-bet], #half-bet, #max-bet").forEach((control) => { control.disabled = true; });
+          playButton.disabled = true;
+          setResult("Game over — you’ve run out of credits.", "loss");
+          renderNav();
+        }
+
+        function settleBlackjack() {
+          const hand = state.blackjack;
+          if (!hand || hand.phase !== "player" || state.busy) return;
+          state.busy = true;
+          hand.phase = "dealer";
+          while (handValue(hand.dealer) < 17) hand.dealer.push(hand.deck.pop());
+          hand.phase = "finished";
+          playArea.innerHTML = areaMarkup();
+          const playerTotal = handValue(hand.player);
+          const dealerTotal = handValue(hand.dealer);
+          if (dealerTotal > 21 || playerTotal > dealerTotal) {
+            finishRound(hand.bet, true, 2, dealerTotal > 21 ? `Dealer busts at ${dealerTotal}. You win!` : `You beat the dealer ${playerTotal} to ${dealerTotal}.`);
+          } else if (playerTotal === dealerTotal) {
+            finishRound(hand.bet, false, 0, `Push at ${playerTotal}.`, true);
+          } else {
+            finishRound(hand.bet, false, 0, `Dealer wins ${dealerTotal} to ${playerTotal}.`);
+          }
+        }
+
+        function blackjackAction(action) {
+          const hand = state.blackjack;
+          if (state.gameOver || !hand || hand.phase !== "player" || state.busy) return;
+          if (action === "stand") {
+            settleBlackjack();
+            return;
+          }
+          if (action !== "hit") return;
+          state.busy = true;
+          hand.player.push(hand.deck.pop());
+          const total = handValue(hand.player);
+          if (total > 21) {
+            hand.phase = "finished";
+            playArea.innerHTML = areaMarkup();
+            finishRound(hand.bet, false, 0, `Bust at ${total}.`);
+          } else if (total === 21) {
+            hand.phase = "player";
+            playArea.innerHTML = areaMarkup();
+            state.busy = false;
+            settleBlackjack();
+          } else {
+            playArea.innerHTML = areaMarkup();
+            setResult(`You have ${total}. Hit or stand?`, "");
+            state.busy = false;
+          }
+        }
+
         function play() {
-          if (state.busy) return;
+          if (state.busy || state.gameOver) return;
           const bet = getBet();
           if (bet === null) return;
           state.busy = true;
@@ -490,22 +694,31 @@
           state.balance -= bet;
           updateBalance();
           setResult("Good luck…", "");
-          const finish = (won, multiplier, message, pushed = false) => {
-            if (pushed) state.balance += bet;
-            else if (won) state.balance += Math.floor(bet * multiplier);
-            updateBalance();
-            setResult(`${message}${pushed ? ` · ${money(bet)} bet returned` : won ? ` · +${money(bet * multiplier)} returned` : ` · −${money(bet)} bet`}`, pushed ? "" : won ? "win" : "loss");
-            addHistory(`${games[state.game].icon} ${pushed ? "Tie" : won ? "+" + money(bet * (multiplier - 1)) : "−" + money(bet)}`, pushed ? "" : won ? "win" : "loss");
-            playArea.classList.remove("is-rolling", "won", "lost");
-            playArea.classList.add(won ? "won" : "lost");
-            if (won) showWinBurst();
-            window.clearTimeout(state.feedbackTimer);
-            state.feedbackTimer = window.setTimeout(() => playArea.classList.remove("won", "lost"), 1100);
-            state.busy = false;
-            playButton.disabled = false;
-          };
+          const finish = (won, multiplier, message, pushed = false) => finishRound(bet, won, multiplier, message, pushed);
 
-          if (state.game === "coin") {
+          if (state.game === "blackjack") {
+            const deck = createDeck();
+            const player = [deck.pop()];
+            const dealer = [deck.pop()];
+            player.push(deck.pop());
+            dealer.push(deck.pop());
+            state.blackjack = { deck, player, dealer, bet, phase: "player" };
+            const playerNatural = player.length === 2 && handValue(player) === 21;
+            const dealerNatural = dealer.length === 2 && handValue(dealer) === 21;
+            if (playerNatural || dealerNatural) {
+              state.blackjack.phase = "finished";
+              playArea.innerHTML = areaMarkup();
+              if (playerNatural && dealerNatural) finish(false, 0, "Both have blackjack.", true);
+              else if (playerNatural) finish(true, 2.5, "Blackjack! You win.");
+              else finish(false, 0, "Dealer has blackjack.");
+            } else {
+              playArea.innerHTML = areaMarkup();
+              playArea.classList.remove("is-rolling");
+              setResult("Your turn. Hit or stand?", "");
+              state.busy = false;
+              playButton.disabled = true;
+            }
+          } else if (state.game === "coin") {
             $("#coin-display").classList.add("flipping");
             window.setTimeout(() => {
               const landed = Math.random() < 0.5 ? "heads" : "tails";
@@ -552,10 +765,16 @@
               }, stopDelays[i]);
             });
           } else {
-            $("#roulette-wheel").classList.add("spinning");
+            const wheel = $("#roulette-wheel");
+            const number = Math.floor(Math.random() * roulettePockets.length);
+            const pocketIndex = roulettePockets.findIndex(([value]) => value === number);
+            const landed = roulettePockets[pocketIndex][1];
+            const pocketAngle = (pocketIndex * 360) / roulettePockets.length;
+            wheel.style.setProperty("--wheel-end-angle", `${1800 + 360 - pocketAngle}deg`);
+            wheel.classList.remove("spinning");
+            void wheel.offsetWidth;
+            wheel.classList.add("spinning");
             window.setTimeout(() => {
-              const number = Math.floor(Math.random() * 37);
-              const landed = number === 0 ? "green" : number % 2 === 0 ? "black" : "red";
               $("#roulette-number").textContent = number;
               const won = landed === state.choice;
               finish(won, landed === "green" ? 36 : 2, ` ${number} · ${landed[0].toUpperCase() + landed.slice(1)}.`);
@@ -590,12 +809,18 @@
 
         $("#game-nav").addEventListener("click", (event) => {
           const button = event.target.closest("[data-game]");
-          if (!button || state.busy) return;
+          if (!button || state.busy || state.gameOver || state.blackjack?.phase === "player") return;
+          state.blackjack = null;
           state.game = button.dataset.game;
           state.choice = state.game === "coin" ? "heads" : state.game === "dice" ? "low" : state.game === "roulette" ? "red" : "";
           renderGame();
         });
         playArea.addEventListener("click", (event) => {
+          const action = event.target.closest("[data-blackjack-action]");
+          if (action) {
+            blackjackAction(action.dataset.blackjackAction);
+            return;
+          }
           const button = event.target.closest("[data-choice]");
           if (!button || state.busy) return;
           state.choice = button.dataset.choice;
@@ -628,6 +853,14 @@
           } else {
             state.balance += 1000;
             updateBalance();
+            if (state.gameOver) {
+              state.gameOver = false;
+              $("#game-over-banner").hidden = true;
+              input.disabled = false;
+              document.querySelectorAll("[data-bet], #half-bet, #max-bet").forEach((control) => { control.disabled = false; });
+              playButton.disabled = false;
+              renderNav();
+            }
             status.textContent = "+1,000 credits added!";
             status.className = "bonus-status success";
             $("#bonus-input").value = "";
